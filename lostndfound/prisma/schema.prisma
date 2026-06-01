@@ -22,7 +22,7 @@ model User{
   name String
   email String @unique
   role UserRole @default(STUDENT)
-  passwordHash String
+  password String
   items Item[]
   claims   Claim[]
   notifications  Notification[]
