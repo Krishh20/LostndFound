@@ -44,9 +44,9 @@ model Item {
   id              Int        @id @default(autoincrement())
   type            ItemType
   title           String
-  description     String?
+  description     String
   category        String
-  imageUrl        String?
+  imageUrl        String
   location        String
   timestamp       DateTime   @default(now())
   status          ItemStatus @default(OPEN)
