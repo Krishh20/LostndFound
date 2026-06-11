@@ -8,3 +8,5 @@ export const createItemSchema=z.object({
   imageUrl  :      z.string(),
   location   :     z.string(),
 })
+
+export const updateItemSchema = createItemSchema.partial();

@@ -16,7 +16,7 @@ if(!decoded.id){
     message:"Invalid Token"
   }, {status:401})
 }
-return NextResponse.json({
-  message:decoded.id
-})
+return {
+  id:decoded.id
+}
 }

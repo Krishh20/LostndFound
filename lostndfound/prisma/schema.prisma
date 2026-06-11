@@ -48,14 +48,13 @@ model Item {
   category        String
   imageUrl        String
   location        String
-  timestamp       DateTime   @default(now())
+  reportedAt       DateTime   @default(now())
   status          ItemStatus @default(OPEN)
   uploadedById     Int
   uploadedBy      User @relation(fields: [uploadedById], references: [id])
-  // embeddingVector Float[]?
+  embeddingVector String?
   lostMatches  Match[]    @relation("LostMatches")
   foundMatches Match[]    @relation("FoundMatches")
-  claims       Claim[]
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
@@ -64,19 +63,26 @@ model Item {
 model Match {
   id              Int      @id @default(autoincrement())
 
-  lostItemId      Int
+   lostItemId      Int
   foundItemId     Int
 
   similarityScore Float
 
   status          MatchStatus @default(PENDING)
+   notificationSent Boolean @default(false)
   claim           Claim?
   lostItem        Item @relation("LostMatches", fields: [lostItemId], references: [id])
   foundItem       Item @relation("FoundMatches", fields: [foundItemId], references: [id])
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+   @@unique([lostItemId, foundItemId])
+
+  @@index([lostItemId])
+  @@index([foundItemId])
 }
+
+
 
 enum MatchStatus {
   PENDING
@@ -94,36 +100,59 @@ enum AdminStatus {
 model Claim {
   id                Int         @id @default(autoincrement())
 
-  itemId            Int
-  item              Item        @relation(fields: [itemId], references: [id])
+  pickupLocation    String?
+  pickupTime        DateTime?
+
+
 
   claimerId         Int
   claimer           User        @relation(fields: [claimerId], references: [id])
 
   verificationScore Float?
-
+  similarityAtClaim Float?
   adminStatus       AdminStatus @default(PENDING)
 
    matchId Int @unique
   match Match @relation(fields: [matchId], references: [id])
 
-  pickupLocation    String?
-  pickupTime        DateTime?
+  claimAnswers ClaimAnswer[]
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
+  @@index([claimerId])
+}
+
+model ClaimAnswer {
+  id        Int @id @default(autoincrement())
+
+  claimId   Int
+  claim     Claim @relation(fields: [claimId], references: [id])
+
+  question  String
+  answer    String?
+
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  MATCH_FOUND
+  CLAIM_APPROVED
+  CLAIM_REJECTED
 }
 
 model Notification {
-  id        Int      @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
 
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User @relation(fields: [userId], references: [id])
 
-  title     String?
-  message   String?
+  type      NotificationType
 
-  isRead    Boolean  @default(false)
+  title     String
+  message   String
+
+  isRead    Boolean @default(false)
 
   createdAt DateTime @default(now())
+   @@index([userId])
 }
